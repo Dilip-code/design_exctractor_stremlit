@@ -2,12 +2,10 @@ import streamlit as st
 from openai import OpenAI
 from PIL import Image
 
-# Use the OpenAI API key from Streamlit secrets
 gpt4o = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.title("Figma Design to HTML/CSS Generator")
 
-# File uploader
 uploaded_file = st.file_uploader("Upload your design image (PNG, JPG, JPEG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
@@ -21,7 +19,7 @@ if uploaded_file is not None:
     )
 
     if "generated_code" not in st.session_state:
-        st.session_state.generated_code = ""  # Initialize session state for generated code
+        st.session_state.generated_code = ""  
 
     if st.button("Generate HTML/CSS Code"):
         if not user_description.strip():
@@ -51,17 +49,14 @@ if uploaded_file is not None:
                         max_tokens=1500,
                     )
 
-                    # Store the response content in session state
                     st.session_state.generated_code = response.choices[0].message.content
 
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
 
-    # Display the generated code if it exists in session state
     if st.session_state.generated_code:
         st.text_area("Generated Code", value=st.session_state.generated_code, height=400)
 
-        # Provide a download button for the generated code
         st.download_button(
             label="Download HTML/CSS Code",
             data=st.session_state.generated_code,
