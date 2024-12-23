@@ -2,10 +2,12 @@ import streamlit as st
 from openai import OpenAI
 from PIL import Image
 
+# Use the OpenAI API key from Streamlit secrets
 gpt4o = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 st.title("Figma Design to HTML/CSS Generator")
 
+# File uploader
 uploaded_file = st.file_uploader("Upload your design image (PNG, JPG, JPEG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
@@ -17,6 +19,9 @@ if uploaded_file is not None:
         "Describe your design (e.g., 'A login page with a form on the right and an illustration on the left')",
         placeholder="Add your design description here...",
     )
+
+    if "generated_code" not in st.session_state:
+        st.session_state.generated_code = ""  # Initialize session state for generated code
 
     if st.button("Generate HTML/CSS Code"):
         if not user_description.strip():
@@ -37,7 +42,7 @@ if uploaded_file is not None:
                 """
                 try:
                     response = gpt4o.chat.completions.create(
-                    model="gpt-4o-mini",
+                        model="gpt-4o-mini",
                         messages=[
                             {"role": "system", "content": "You are a front-end development assistant."},
                             {"role": "user", "content": prompt},
@@ -46,16 +51,20 @@ if uploaded_file is not None:
                         max_tokens=1500,
                     )
 
-                    response_content: int = response.choices[0].message.content
-
-                    st.text_area("Generated Code", value=response_content, height=400)
-
-                    st.download_button(
-                        label="Download HTML/CSS Code",
-                        data=response_content,
-                        file_name="generated_design_code.html",
-                        mime="text/html",
-                    )
+                    # Store the response content in session state
+                    st.session_state.generated_code = response.choices[0].message.content
 
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
+
+    # Display the generated code if it exists in session state
+    if st.session_state.generated_code:
+        st.text_area("Generated Code", value=st.session_state.generated_code, height=400)
+
+        # Provide a download button for the generated code
+        st.download_button(
+            label="Download HTML/CSS Code",
+            data=st.session_state.generated_code,
+            file_name="generated_design_code.html",
+            mime="text/html",
+        )
