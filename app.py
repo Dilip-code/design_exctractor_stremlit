@@ -1,8 +1,10 @@
 import streamlit as st
-from openai import OpenAI
 from PIL import Image
+import google.generativeai as genai
 
-gpt4o = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 st.title("Figma Design to HTML/CSS Generator")
 
@@ -19,7 +21,7 @@ if uploaded_file is not None:
     )
 
     if "generated_code" not in st.session_state:
-        st.session_state.generated_code = ""  
+        st.session_state.generated_code = ""
 
     if st.button("Generate HTML/CSS Code"):
         if not user_description.strip():
@@ -28,28 +30,18 @@ if uploaded_file is not None:
             with st.spinner("Generating HTML and CSS..."):
                 prompt = f"""
                 Based on the following design description, generate responsive HTML and CSS code:
-                {user_description}
-                
-                Ensure the code is:
-                - Mobile-friendly
-                - Cleanly formatted
-                - Uses semantic HTML5 elements
-                - Includes comments explaining the code
-                
-                The design description: {user_description}
-                """
-                try:
-                    response = gpt4o.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {"role": "system", "content": "You are a front-end development assistant."},
-                            {"role": "user", "content": prompt},
-                        ],
-                        temperature=0.7,
-                        max_tokens=1500,
-                    )
 
-                    st.session_state.generated_code = response.choices[0].message.content
+                {user_description}
+
+                Requirements:
+                - Mobile-friendly
+                - Clean, semantic HTML5
+                - Properly commented code
+                """
+
+                try:
+                    response = model.generate_content(prompt)
+                    st.session_state.generated_code = response.text
 
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
