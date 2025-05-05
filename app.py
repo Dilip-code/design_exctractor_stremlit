@@ -12,7 +12,7 @@ uploaded_file = st.file_uploader("Upload your design image (PNG, JPG, JPEG)", ty
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Design Image", use_column_width=True)
+    st.image(image, caption="Uploaded Design Image", use_container_width=True)
 
     st.write("Since direct image processing is not supported, please provide a brief description of your design.")
     user_description = st.text_area(
